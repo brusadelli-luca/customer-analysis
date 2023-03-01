@@ -9,8 +9,7 @@ class kmeans():
 
     def __init__(self):
         
-        self.threshold = 0,5
-        self.TH = np.random.rand(X.shape[1], 1)
+        self.c = []
     
 
     # 1. Decide how many clusters you want, i.e. choose k
