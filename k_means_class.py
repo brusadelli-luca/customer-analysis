@@ -2,6 +2,8 @@ from functions import dist_calc
 from random import randint
 
 import pandas as pd
+import matplotlib.pyplot as plt
+
 
 from statistics import mean
 
@@ -10,26 +12,28 @@ class kmeans():
     def __init__(self):
         
         self.c = []
+        self.unique_y = []
+        self.clusters = []
     
 
     # 1. Decide how many clusters you want, i.e. choose k
 
-    def fit(self, X, k=3):
+    def fit(self, X, k=3, plot=False):
           
         # 2. Randomly assign a centroid to each of the k clusters
-            
-        x_min, x_max, y_min, y_max = round(min(X[:, 0])), round(max(X[:, 0])), round(min(X[:, 1])), round(max(X[:, 1]))
-        centroids = [[randint(x_min, x_max), randint(y_min, y_max)] for c in range(k)]
-        result = [centroids]
+        
+        #Sélection aléatoire de 3 points dans la fenêtre des X = centroïdes de départ
+
+        x0_min, x0_max, x1_min, x1_max = round(min(X[:, 0])), round(max(X[:, 0])), round(min(X[:, 1])), round(max(X[:, 1]))
+        
+        centroids = [[randint(x0_min, x0_max), randint(x1_min, x1_max)] for c in range(k)]
+        centroids_list = [centroids]
 
         
         # Repeat steps 3-5 until the centroids do not change position
 
+        #Choix du nombre d'itérations
         steps = 10
-
-        centroids = [[randint(x0_min, x0_max), randint(x1_min, x1_max)] for c in range(k)]
-
-        centroids_list = [centroids]
 
         for step in range(steps):
 
@@ -57,18 +61,43 @@ class kmeans():
 
             centroids_list.append(new_centroids)
 
+        self.c = new_centroids
+        self.unique_y = unique_y
+        self.clusters = [df[df['y_pred'] == i].reindex(columns = ['x0','x1']).to_numpy() for i in unique_y]
 
         # Plot
+        if plot:
+            dfR = pd.DataFrame(centroids_list)
 
-        dfR = pd.DataFrame(centroids_list)
+            c_list = [dfR[u].to_list() for u in unique_y]
 
-        c_list = [dfR[u].to_list() for u in unique_y]
+            for i in range(len(unique_y)):
+                plt.plot([c[0] for c in c_list[i]], [c[1] for c in c_list[i]])
 
-        for i in range(len(unique_y)):
-            plt.plot([c[0] for c in c_list[i]], [c[1] for c in c_list[i]])
-
-        plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Set1, edgecolor="k")
+            plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Set1, edgecolor="k")
 
 
-    def predict(self):
-        0
+    def elbow(self, X, K):
+
+        result = []
+
+        for k in range(1, K + 1):
+
+            self.fit(X, k)
+            
+            inertie = 0
+            for i in range(len(self.unique_y)):
+                inertie = inertie + round(sum([dist_calc(P, self.c[i]) for P in self.clusters[i]]), 2)
+
+            result.append(round(inertie, 2))
+        
+        return result
+
+
+    def predict(self, X):
+        
+        dists = [[dist_calc(P, c) for c in self.c] for P in X]
+    
+        y = [d.index(min(d)) for d in dists]
+
+        return y

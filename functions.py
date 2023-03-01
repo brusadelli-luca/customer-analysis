@@ -1,5 +1,6 @@
 from math import sqrt
 
+
 def dist_calc(P1, P2):
 
     x1, y1, x2, y2 = P1[0], P1[1], P2[0], P2[1]
