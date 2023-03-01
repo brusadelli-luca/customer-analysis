@@ -1,0 +1,5 @@
+*.csv
+*.txt
+*.ipynb_checkpoints
+__pycache__
+plot_iris_dataset.ipynb
