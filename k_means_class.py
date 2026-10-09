@@ -1,5 +1,5 @@
 from functions import dist_calc
-from random import randint
+from random import randint, seed
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,9 +18,12 @@ class kmeans():
 
     # 1. Decide how many clusters you want, i.e. choose k
 
-    def fit(self, X, k=3, plot=False):
+    def fit(self, X, k=3, plot=False, random_state=None):
           
         # 2. Randomly assign a centroid to each of the k clusters
+
+        if random_state is not None:
+            seed(random_state)
         
         #Sélection aléatoire de 3 points dans la fenêtre des X = centroïdes de départ
 
@@ -54,10 +57,10 @@ class kmeans():
 
             df = pd.concat((df_X, df_y), axis = 1)
 
-            unique_y = list(dict.fromkeys(y))
-            unique_y.sort()
+            unique_y = list(range(k))
 
-            new_centroids = [[round(mean(df[df['y_pred'] == o].x0), 2), round(mean(df[df['y_pred'] == o].x1), 2)] for o in unique_y]
+            # Un cluster vide garde son centroïde précédent (sinon il disparaît)
+            new_centroids = [[round(mean(df[df['y_pred'] == o].x0), 2), round(mean(df[df['y_pred'] == o].x1), 2)] if o in y else centroids_list[-1][o] for o in unique_y]
 
             centroids_list.append(new_centroids)
 
@@ -77,7 +80,10 @@ class kmeans():
             plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Set1, edgecolor="k")
 
 
-    def elbow(self, X, K):
+    def elbow(self, X, K, random_state=None):
+
+        if random_state is not None:
+            seed(random_state)
 
         result = []
 
